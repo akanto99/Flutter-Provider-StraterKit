@@ -1,0 +1,371 @@
+import 'package:flutter_provider_straterkit/configs/res/color.dart';
+import 'package:flutter_provider_straterkit/configs/res/components/notifications/resuable_notifications.dart';
+import 'package:flutter_provider_straterkit/configs/res/sizedbox_spaccing.dart';
+import 'package:flutter_provider_straterkit/configs/res/text_styles.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+
+enum ErrorType { network, timeout, general }
+
+class ErrorStateWidget extends StatelessWidget {
+  final String errorMessage;
+  final VoidCallback onRetry;
+  final double? height;
+
+  const ErrorStateWidget({
+    Key? key,
+    required this.errorMessage,
+    required this.onRetry,
+    this.height,
+  }) : super(key: key);
+
+  ErrorType _getErrorType(String message) {
+    final lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.contains('timeout') ||
+        lowerMessage.contains('request timeout') ||
+        lowerMessage.contains('took too long')) {
+      return ErrorType.timeout;
+    } else if (lowerMessage.contains('no internet') ||
+        lowerMessage.contains('network') ||
+        lowerMessage.contains('connection') ||
+        lowerMessage.contains('socket')) {
+      return ErrorType.network;
+    } else {
+      return ErrorType.general;
+    }
+  }
+
+  Map<String, dynamic> _getErrorConfig(ErrorType errorType) {
+    switch (errorType) {
+      case ErrorType.timeout:
+        return {
+          'icon': Icons.access_time_outlined,
+          'title': 'Request Timeout',
+          'description':
+              'The request is taking longer than expected. Please try again.',
+          'color': AppColors.error,
+          'tips': [
+            'Check your internet connection speed',
+            'Try switching between WiFi and mobile data',
+            'Close other apps using internet',
+          ],
+        };
+      case ErrorType.network:
+        return {
+          'icon': Icons.wifi_off_rounded,
+          'title': 'No Internet Connection',
+          'description': 'Please check your internet connection and try again.',
+          'color': AppColors.error,
+          'tips': [
+            'Check if WiFi or mobile data is enabled',
+            'Try turning airplane mode on and off',
+            'Restart your router if using WiFi',
+          ],
+        };
+      case ErrorType.general:
+      default:
+        return {
+          'icon': null,
+          'title': 'Something went wrong',
+          'description': 'An unexpected error occurred. Please try again.',
+          'color': AppColors.error,
+          'tips': [],
+        };
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final errorType = _getErrorType(errorMessage);
+    final config = _getErrorConfig(errorType);
+
+    return Container(
+      height: height ?? screenHeight * 0.29,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon — only show if not null
+            if (config['icon'] != null) ...[
+              Container(
+                width: screenWidth,
+                height: screenHeight * 0.05,
+                child: Center(
+                  child: Icon(config['icon'], size: 40, color: config['color']),
+                ),
+              ),
+              SizedboxSpaccing.height01(context),
+              SizedboxSpaccing.height01(context),
+            ],
+
+            // Title — only show if not null
+            if (config['title'] != null) ...[
+              Container(
+                height: screenHeight * 0.03,
+                child: Text(
+                  config['title'],
+                  style: AppTextStyles.textSize16(
+                    context,
+                    weight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+
+            // Description — only show if not null
+            if (config['description'] != null) ...[
+              Text(
+                config['description'],
+                style: AppTextStyles.textSize12(
+                  context,
+                  weight: FontWeight.w400,
+                  color: AppColors.subtitle(context),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            SizedboxSpaccing.height015(context),
+            SizedboxSpaccing.height015(context),
+
+            // Retry Button
+            GestureDetector(
+              onTap: onRetry,
+              child: Container(
+                height: screenHeight * 0.045,
+                width: screenWidth * 0.3,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: AppColors.button(context),
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.refresh_rounded,
+                        size: 18,
+                        color: AppColors.whiteColor,
+                      ),
+                      SizedboxSpaccing.width02(context),
+                      Text(
+                        errorType == ErrorType.timeout ? 'Try Again' : 'Retry',
+                        style: AppTextStyles.textSize14(
+                          context,
+                          weight: FontWeight.w600,
+                          color: AppColors.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Tips Section — only for timeout errors
+            if (errorType == ErrorType.timeout) ...[
+              SizedboxSpaccing.height015(context),
+              SizedboxSpaccing.height015(context),
+              Container(
+                width: screenWidth * 0.9,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border(context)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb_outline,
+                          size: 16,
+                          color: AppColors.textPrimary(context),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Troubleshooting Tips',
+                          style: AppTextStyles.textSize12(
+                            context,
+                            weight: FontWeight.w500,
+                            color: AppColors.textPrimary(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...(config['tips'] as List)
+                        .map<Widget>(
+                          (tip) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 6),
+                                  width: 4,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.border(context),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    tip,
+                                    style: AppTextStyles.textSize12(
+                                      context,
+                                      weight: FontWeight.w400,
+                                      color: AppColors.textPrimary(context),
+                                    ).copyWith(height: 1.4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Alias for compatibility with existing code
+class ExceptionErrorState extends ErrorStateWidget {
+  ExceptionErrorState({
+    Key? key,
+    required String message,
+    required VoidCallback onRetry,
+    double? height,
+  }) : super(key: key, errorMessage: message, onRetry: onRetry, height: height);
+}
+
+class ErrorStateEmptyHeaderWidget extends StatelessWidget {
+  final String errorMessage;
+  final VoidCallback onRetry;
+  final double? height;
+
+  const ErrorStateEmptyHeaderWidget({
+    Key? key,
+    required this.errorMessage,
+    required this.onRetry,
+    this.height,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      height: 75,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+        color: AppColors.containerBackground(context),
+        border: Border(
+          bottom: BorderSide(color: AppColors.border(context), width: 1.0),
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: screenWidth * 0.9,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Drawer Icon
+              Builder(
+                builder: (context) => GestureDetector(
+                  onTap: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                  child: Container(
+                    height: 45,
+                    width: 45,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.appBackground(context),
+                      border: Border.all(
+                        width: 1,
+                        color: AppColors.textPrimary(context),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Right Side Icons
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      NotificationDialog.show(
+                        context,
+                        message: 'Empty Inbox',
+                        icon: CupertinoIcons.text_bubble,
+                        iconColor: AppColors.textPrimary(context),
+                        iconBackgroundColor: AppColors.appBackground(context),
+                      );
+                    },
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      padding: const EdgeInsets.all(2),
+                      child: SvgPicture.asset(
+                        'assets/images/home/email.svg',
+                        colorFilter: ColorFilter.mode(
+                          AppColors.textPrimary(context),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedboxSpaccing.width02(context),
+                  GestureDetector(
+                    onTap: () {
+                      NotificationDialog.show(
+                        context,
+                        message: 'No Notification Yet',
+                        icon: Icons.notifications_outlined,
+                        iconColor: AppColors.textPrimary(context),
+                        iconBackgroundColor: AppColors.appBackground(context),
+                      );
+                    },
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      padding: const EdgeInsets.all(2),
+                      child: SvgPicture.asset(
+                        'assets/images/home/notification.svg',
+                        colorFilter: ColorFilter.mode(
+                          AppColors.textPrimary(context),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

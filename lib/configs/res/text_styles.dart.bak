@@ -1,0 +1,18 @@
+import 'package:flutter/material.dart';
+class AppTextStyles {
+  static TextStyle heading(BuildContext c, {FontWeight? w, Color? col}) => Theme.of(c).textTheme.displayMedium?.copyWith(fontWeight: w ?? FontWeight.w600, color: col) ?? const TextStyle(fontSize: 28, fontWeight: FontWeight.w600);
+  static TextStyle title(BuildContext c, {FontWeight? w, Color? col}) => Theme.of(c).textTheme.titleLarge?.copyWith(fontWeight: w ?? FontWeight.w500, color: col) ?? const TextStyle(fontSize: 20, fontWeight: FontWeight.w500);
+  static TextStyle body(BuildContext c, {FontWeight? w, Color? col}) => Theme.of(c).textTheme.bodyMedium?.copyWith(fontWeight: w ?? FontWeight.w400, color: col) ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400);
+  static TextStyle caption(BuildContext c, {FontWeight? w, Color? col}) => Theme.of(c).textTheme.bodySmall?.copyWith(fontWeight: w ?? FontWeight.w400, color: col) ?? const TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
+  static TextStyle label(BuildContext c, {FontWeight? w, Color? col}) => Theme.of(c).textTheme.labelLarge?.copyWith(fontWeight: w ?? FontWeight.w400, color: col) ?? const TextStyle(fontSize: 10, fontWeight: FontWeight.w400);
+}
+
+// Alias methods for compatibility
+extension TextStyleAliases on AppTextStyles {
+  static TextStyle textSize16(BuildContext c, {FontWeight? w, Color? col}) => AppTextStyles.body(c, weight: w, color: col);
+  static TextStyle textSize12(BuildContext c, {FontWeight? w, Color? col}) => AppTextStyles.caption(c, weight: w, color: col);
+  static TextStyle textSize18(BuildContext c, {FontWeight? w, Color? col}) => AppTextStyles.title(c, weight: w, color: col);
+  static TextStyle textSize14(BuildContext c, {FontWeight? w, Color? col}) => AppTextStyles.body(c, weight: w, color: col);
+  static TextStyle textSize10(BuildContext c, {FontWeight? w, Color? col}) => AppTextStyles.caption(c, weight: w, color: col);
+
+}
